@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Piper TTS Studio</title>
   <style>
     :root {
@@ -25,7 +25,12 @@
       --radius-sm: 8px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html {
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+    }
 
     body {
       font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -36,6 +41,8 @@
       flex-direction: column;
       align-items: center;
       padding: 2rem 1rem 3rem;
+      padding-bottom: calc(3rem + env(safe-area-inset-bottom));
+      overscroll-behavior: none;
     }
 
     header {
@@ -104,6 +111,7 @@
       transition: all 0.15s;
       background: var(--surface2);
       user-select: none;
+      touch-action: manipulation;
     }
     .voice-card:hover { border-color: var(--accent2); background: var(--surface3); }
     .voice-card.selected {
@@ -132,11 +140,12 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       color: var(--text);
-      font-size: 0.98rem; line-height: 1.65;
+      font-size: 16px; line-height: 1.65;
       padding: 0.9rem 1rem;
       resize: vertical; outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
       font-family: inherit;
+      -webkit-appearance: none;
     }
     textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     .char-count {
@@ -148,9 +157,10 @@
       background: var(--surface2);
       border: 1px solid var(--border);
       color: var(--text2);
-      font-size: 0.75rem; padding: 0.28rem 0.7rem;
+      font-size: 0.75rem; padding: 0.38rem 0.8rem;
       border-radius: 999px; cursor: pointer;
       transition: all 0.15s; font-family: inherit;
+      touch-action: manipulation;
     }
     .quick-btn:hover { border-color: var(--accent); color: var(--accent2); background: var(--surface3); }
 
@@ -177,6 +187,7 @@
       -webkit-appearance: none; width: 100%; height: 4px;
       background: var(--border2); border-radius: 999px;
       outline: none; cursor: pointer;
+      touch-action: pan-x;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; width: 15px; height: 15px;
@@ -205,6 +216,8 @@
       border-radius: var(--radius-sm); border: none;
       cursor: pointer; transition: all 0.18s; white-space: nowrap;
       font-family: inherit;
+      touch-action: manipulation;
+      -webkit-appearance: none;
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), #9a72ff);
@@ -281,11 +294,13 @@
 
     .player-controls { display: flex; align-items: center; gap: 0.9rem; }
     .ctrl-btn {
-      width: 38px; height: 38px; border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       border: 1px solid var(--border2); background: var(--surface2);
       color: var(--text2); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.95rem; transition: all 0.15s;
+      touch-action: manipulation;
+      -webkit-appearance: none;
     }
     .ctrl-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--accent2); }
     .ctrl-btn.play-btn {
