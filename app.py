@@ -1,24 +1,31 @@
 import io
-import wave
+import asyncio
+import edge_tts
 from flask import Flask, render_template, request, send_file, jsonify
 
 app = Flask(__name__)
 
-MODEL_PATH = "en_US-amy-medium.onnx"
-CONFIG_PATH = "en_US-amy-medium.onnx.json"
-
-_voice = None
-
-def get_voice():
-    global _voice
-    if _voice is None:
-        from piper.voice import PiperVoice
-        _voice = PiperVoice.load(MODEL_PATH, config_path=CONFIG_PATH)
-    return _voice
+VOICES = [
+    {"id": "en-US-AvaNeural",        "name": "Ava",         "gender": "Female", "style": "Natural, warm"},
+    {"id": "en-US-EmmaNeural",       "name": "Emma",        "gender": "Female", "style": "Natural, friendly"},
+    {"id": "en-US-JennyNeural",      "name": "Jenny",       "gender": "Female", "style": "Conversational"},
+    {"id": "en-US-AriaNeural",       "name": "Aria",        "gender": "Female", "style": "Expressive"},
+    {"id": "en-US-MichelleNeural",   "name": "Michelle",    "gender": "Female", "style": "Clear, professional"},
+    {"id": "en-US-AndrewNeural",     "name": "Andrew",      "gender": "Male",   "style": "Natural, warm"},
+    {"id": "en-US-BrianNeural",      "name": "Brian",       "gender": "Male",   "style": "Natural, friendly"},
+    {"id": "en-US-ChristopherNeural","name": "Christopher", "gender": "Male",   "style": "Deep, professional"},
+    {"id": "en-US-EricNeural",       "name": "Eric",        "gender": "Male",   "style": "Clear, confident"},
+    {"id": "en-US-GuyNeural",        "name": "Guy",         "gender": "Male",   "style": "Expressive"},
+    {"id": "en-US-RogerNeural",      "name": "Roger",       "gender": "Male",   "style": "Calm, articulate"},
+]
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", voices=VOICES)
+
+@app.route("/voices")
+def get_voices():
+    return jsonify(VOICES)
 
 @app.route("/synthesize", methods=["POST"])
 def synthesize():
@@ -27,46 +34,44 @@ def synthesize():
     if not text:
         return jsonify({"error": "No text provided"}), 400
 
+    voice_id = data.get("voice", "en-US-AvaNeural")
+    valid_ids = {v["id"] for v in VOICES}
+    if voice_id not in valid_ids:
+        voice_id = "en-US-AvaNeural"
+
     try:
-        length_scale = float(data.get("speed", 1.0))
-        noise_scale = float(data.get("expressiveness", 0.667))
-        noise_w_scale = float(data.get("variation", 0.8))
-        volume = float(data.get("volume", 1.0))
+        rate = int(data.get("rate", 0))
+        rate = max(-50, min(100, rate))
+        pitch = int(data.get("pitch", 0))
+        pitch = max(-20, min(20, pitch))
+        volume = int(data.get("volume", 0))
+        volume = max(-50, min(50, volume))
 
-        length_scale = max(0.25, min(4.0, length_scale))
-        noise_scale = max(0.0, min(2.0, noise_scale))
-        noise_w_scale = max(0.0, min(2.0, noise_w_scale))
-        volume = max(0.1, min(2.0, volume))
+        rate_str   = f"{rate:+d}%"
+        pitch_str  = f"{pitch:+d}Hz"
+        volume_str = f"{volume:+d}%"
 
-        from piper.config import SynthesisConfig
-        syn_config = SynthesisConfig(
-            length_scale=length_scale,
-            noise_scale=noise_scale,
-            noise_w_scale=noise_w_scale,
-            volume=volume,
-        )
+        async def do_synth():
+            communicate = edge_tts.Communicate(
+                text,
+                voice=voice_id,
+                rate=rate_str,
+                pitch=pitch_str,
+                volume=volume_str,
+            )
+            buf = io.BytesIO()
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    buf.write(chunk["data"])
+            buf.seek(0)
+            return buf
 
-        voice = get_voice()
-        all_bytes = b""
-        sample_rate = 22050
-        sample_width = 2
-        sample_channels = 1
+        buf = asyncio.run(do_synth())
 
-        for chunk in voice.synthesize(text, syn_config=syn_config):
-            all_bytes += chunk.audio_int16_bytes
-            sample_rate = chunk.sample_rate
-            sample_width = chunk.sample_width
-            sample_channels = chunk.sample_channels
+        if buf.getbuffer().nbytes == 0:
+            return jsonify({"error": "No audio generated — try different text or settings"}), 500
 
-        buf = io.BytesIO()
-        with wave.open(buf, "wb") as wf:
-            wf.setnchannels(sample_channels)
-            wf.setsampwidth(sample_width)
-            wf.setframerate(sample_rate)
-            wf.writeframes(all_bytes)
-
-        buf.seek(0)
-        return send_file(buf, mimetype="audio/wav", as_attachment=False, download_name="speech.wav")
+        return send_file(buf, mimetype="audio/mpeg", as_attachment=False, download_name="speech.mp3")
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
