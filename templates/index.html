@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piper TTS – Text to Speech</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 1rem;
+      padding: 2rem;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 0.25rem;
+    }
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 1.75rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      color: #e2e8f0;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: #6366f1; }
+    button {
+      margin-top: 1.25rem;
+      width: 100%;
+      padding: 0.75rem;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover:not(:disabled) { background: #4f46e5; }
+    button:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+    .status {
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: #94a3b8;
+      min-height: 1.25rem;
+      text-align: center;
+    }
+    .status.error { color: #f87171; }
+    audio {
+      margin-top: 1rem;
+      width: 100%;
+      border-radius: 0.5rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #1e3a5f;
+      color: #7dd3fc;
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Piper TTS <span class="badge">en-US Amy</span></h1>
+    <p class="subtitle">Local neural text-to-speech powered by Piper</p>
+
+    <label for="textInput">Text to speak</label>
+    <textarea id="textInput" placeholder="Type something here and click Synthesize…">Hello! I am Piper, a fast and local text to speech system.</textarea>
+
+    <button id="synthBtn" onclick="synthesize()">🔊 Synthesize</button>
+
+    <p class="status" id="status"></p>
+    <audio id="player" controls style="display:none"></audio>
+  </div>
+
+  <script>
+    async function synthesize() {
+      const text = document.getElementById('textInput').value.trim();
+      if (!text) return;
+
+      const btn = document.getElementById('synthBtn');
+      const status = document.getElementById('status');
+      const player = document.getElementById('player');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Synthesizing…';
+      status.className = 'status';
+      status.textContent = 'Generating audio — this may take a moment on first run…';
+      player.style.display = 'none';
+
+      try {
+        const res = await fetch('/synthesize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(err.error || res.statusText);
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        player.src = url;
+        player.style.display = 'block';
+        player.play();
+        status.textContent = 'Done! Audio ready.';
+      } catch (e) {
+        status.className = 'status error';
+        status.textContent = 'Error: ' + e.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔊 Synthesize';
+      }
+    }
+
+    document.getElementById('textInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.ctrlKey) synthesize();
+    });
+  </script>
+</body>
+</html>
