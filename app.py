@@ -1,6 +1,5 @@
 import io
 import wave
-import struct
 from flask import Flask, render_template, request, send_file, jsonify
 
 app = Flask(__name__)
@@ -48,23 +47,23 @@ def synthesize():
         )
 
         voice = get_voice()
-        all_samples = []
-        sample_rate = None
+        all_bytes = b""
+        sample_rate = 22050
+        sample_width = 2
+        sample_channels = 1
 
         for chunk in voice.synthesize(text, syn_config=syn_config):
-            all_samples.extend(chunk.audio)
-            if sample_rate is None:
-                sample_rate = chunk.sample_rate
-
-        if sample_rate is None:
-            sample_rate = 22050
+            all_bytes += chunk.audio_int16_bytes
+            sample_rate = chunk.sample_rate
+            sample_width = chunk.sample_width
+            sample_channels = chunk.sample_channels
 
         buf = io.BytesIO()
         with wave.open(buf, "wb") as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
+            wf.setnchannels(sample_channels)
+            wf.setsampwidth(sample_width)
             wf.setframerate(sample_rate)
-            wf.writeframes(struct.pack(f"<{len(all_samples)}h", *all_samples))
+            wf.writeframes(all_bytes)
 
         buf.seek(0)
         return send_file(buf, mimetype="audio/wav", as_attachment=False, download_name="speech.wav")
