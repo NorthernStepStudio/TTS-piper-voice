@@ -4,530 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Piper TTS Studio</title>
-  <style>
-    :root {
-      --bg: #09090f;
-      --surface: #101018;
-      --surface2: #17171f;
-      --surface3: #1f1f2a;
-      --surface4: #272735;
-      --border: #252533;
-      --border2: #323246;
-      --accent: #7c5cfc;
-      --accent2: #a78bfa;
-      --accent3: #c4b5fd;
-      --accent-glow: rgba(124,92,252,0.22);
-      --green: #34d399;
-      --green-dim: rgba(52,211,153,0.12);
-      --green-border: rgba(52,211,153,0.28);
-      --blue: #60a5fa;
-      --blue-dim: rgba(96,165,250,0.12);
-      --blue-border: rgba(96,165,250,0.28);
-      --amber: #fbbf24;
-      --amber-dim: rgba(251,191,36,0.1);
-      --red: #f87171;
-      --red-dim: rgba(248,113,113,0.12);
-      --text: #e4e4f0;
-      --text2: #8888a8;
-      --text3: #50506a;
-      --radius: 14px;
-      --radius-sm: 9px;
-      --radius-xs: 6px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
-    body {
-      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overscroll-behavior: none;
-    }
-
-    /* ── TOP NAV ── */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(9,9,15,0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center;
-      padding: 0 1.5rem;
-      height: 56px; gap: 0;
-    }
-    .nav-logo { display: flex; align-items: center; gap: 0.6rem; margin-right: 2rem; }
-    .nav-logo-icon {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--accent), #b084ff);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem;
-      box-shadow: 0 0 14px var(--accent-glow);
-      flex-shrink: 0;
-    }
-    .nav-logo-text { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
-    .nav-logo-text span { color: var(--accent2); }
-    .nav-tabs { display: flex; gap: 0; flex: 1; }
-    .nav-tab {
-      padding: 0 1.1rem; height: 56px;
-      display: flex; align-items: center; gap: 0.45rem;
-      font-size: 0.85rem; font-weight: 600;
-      color: var(--text3); cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.15s, border-color 0.15s;
-      user-select: none; touch-action: manipulation;
-      white-space: nowrap;
-    }
-    .nav-tab:hover { color: var(--text2); }
-    .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); }
-    .nav-tab .tab-icon { font-size: 1rem; }
-    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
-    .nav-badge {
-      font-size: 0.65rem; font-weight: 700;
-      background: var(--green-dim);
-      border: 1px solid var(--green-border);
-      color: var(--green);
-      padding: 0.2rem 0.55rem;
-      border-radius: 999px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    /* ── PANELS ── */
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    /* ── STUDIO PANEL ── */
-    .studio-layout {
-      max-width: 860px; margin: 0 auto;
-      padding: 1.75rem 1rem 4rem;
-      display: flex; flex-direction: column; gap: 1rem;
-    }
-
-    /* ── CARDS ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.3rem 1.4rem;
-    }
-    .card-title {
-      font-size: 0.68rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      color: var(--text3);
-      margin-bottom: 0.85rem;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .card-title .ml { margin-left: auto; }
-
-    /* ── VOICE GRID ── */
-    .voice-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-      gap: 0.5rem;
-    }
-    .voice-card {
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 0.65rem 0.85rem;
-      cursor: pointer; transition: all 0.15s;
-      background: var(--surface2);
-      user-select: none; touch-action: manipulation;
-    }
-    .voice-card:active { transform: scale(0.97); }
-    .voice-card:hover { border-color: var(--border2); background: var(--surface3); }
-    .voice-card.selected {
-      border-color: var(--accent);
-      background: rgba(124,92,252,0.09);
-      box-shadow: 0 0 0 1px var(--accent) inset;
-    }
-    .voice-name { font-size: 0.88rem; font-weight: 700; }
-    .voice-meta {
-      font-size: 0.68rem; color: var(--text3);
-      margin-top: 0.12rem;
-      display: flex; gap: 0.35rem; align-items: center;
-    }
-    .gdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .gdot.f { background: #f472b6; }
-    .gdot.m { background: #60a5fa; }
-
-    /* ── TEXTAREA ── */
-    .text-wrap { position: relative; }
-    textarea {
-      width: 100%; min-height: 140px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-size: 16px; line-height: 1.6;
-      padding: 0.85rem 0.95rem; resize: vertical; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      font-family: inherit; -webkit-appearance: none;
-    }
-    textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-    .char-count {
-      position: absolute; bottom: 0.5rem; right: 0.7rem;
-      font-size: 0.68rem; color: var(--text3); pointer-events: none;
-    }
-    .quick-wrap { display: flex; flex-wrap: wrap; gap: 0.38rem; margin-top: 0.65rem; }
-    .quick-btn {
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text2); font-size: 0.73rem; padding: 0.32rem 0.72rem;
-      border-radius: 999px; cursor: pointer;
-      transition: all 0.15s; font-family: inherit;
-      touch-action: manipulation;
-    }
-    .quick-btn:hover { border-color: var(--accent2); color: var(--accent3); }
-
-    /* ── SLIDERS ── */
-    .controls-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem 1.5rem;
-    }
-    @media (max-width: 580px) { .controls-grid { grid-template-columns: 1fr; } }
-    .ctrl label {
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.78rem; font-weight: 600; color: var(--text2); margin-bottom: 0.4rem;
-    }
-    .ctrl label .v {
-      font-size: 0.72rem; font-weight: 700; color: var(--accent2);
-      background: var(--surface3); border: 1px solid var(--border2);
-      padding: 0.06rem 0.42rem; border-radius: 4px;
-      min-width: 2.7rem; text-align: center;
-    }
-    input[type=range] {
-      -webkit-appearance: none; width: 100%; height: 4px;
-      background: var(--border2); border-radius: 999px;
-      outline: none; cursor: pointer; touch-action: pan-x;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 16px; height: 16px;
-      border-radius: 50%; background: var(--accent);
-      box-shadow: 0 0 8px var(--accent-glow); cursor: pointer;
-      transition: transform 0.15s;
-    }
-    input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.18); }
-    input[type=range]::-moz-range-thumb {
-      width: 16px; height: 16px; border-radius: 50%;
-      background: var(--accent); border: none;
-    }
-    .ctrl-hint { font-size: 0.65rem; color: var(--text3); margin-top: 0.28rem; }
-    .reset-link {
-      font-size: 0.67rem; color: var(--text3);
-      cursor: pointer; text-decoration: underline dotted;
-      touch-action: manipulation;
-    }
-    .reset-link:hover { color: var(--text2); }
-
-    /* ── BUTTONS ── */
-    .action-bar { display: flex; gap: 0.65rem; }
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-      font-size: 0.88rem; font-weight: 600;
-      padding: 0.72rem 1.4rem;
-      border-radius: var(--radius-sm); border: none;
-      cursor: pointer; transition: all 0.18s; white-space: nowrap;
-      font-family: inherit; touch-action: manipulation; -webkit-appearance: none;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #9a72ff);
-      color: #fff; flex: 1; box-shadow: 0 4px 20px var(--accent-glow);
-    }
-    .btn-primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
-    .btn-primary:active:not(:disabled) { transform: translateY(0); }
-    .btn-primary:disabled { background: var(--surface3); color: var(--text3); box-shadow: none; cursor: not-allowed; }
-    .btn-ghost {
-      background: var(--surface2); color: var(--text2); border: 1px solid var(--border2);
-    }
-    .btn-ghost:hover:not(:disabled) { background: var(--surface3); color: var(--text); border-color: var(--accent2); }
-    .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-green {
-      background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border);
-    }
-    .btn-green:hover { background: rgba(52,211,153,0.2); }
-
-    /* ── STATUS ── */
-    .status-bar {
-      text-align: center; font-size: 0.78rem; color: var(--text3);
-      padding: 0.35rem; min-height: 1.3rem;
-    }
-    .status-bar.loading { color: var(--accent2); }
-    .status-bar.error   { color: var(--red); }
-    .status-bar.ok      { color: var(--green); }
-    .spinner {
-      display: inline-block; width: 11px; height: 11px;
-      border: 2px solid var(--accent); border-top-color: transparent;
-      border-radius: 50%; animation: spin 0.7s linear infinite;
-      vertical-align: middle; margin-right: 0.3rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── PLAYER ── */
-    .player-card { display: none; }
-    .player-card.show { display: block; }
-    .player-top {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 0.9rem; gap: 0.75rem;
-    }
-    .player-alive {
-      font-size: 0.75rem; font-weight: 700; color: var(--green);
-      display: flex; align-items: center; gap: 0.38rem;
-    }
-    .player-alive::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--green); box-shadow: 0 0 8px var(--green);
-      animation: blink 2s infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .player-sub { font-size: 0.68rem; color: var(--text3); margin-top: 0.18rem; }
-    .waveform-wrap {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); overflow: hidden;
-      margin-bottom: 0.85rem; position: relative; height: 64px;
-    }
-    canvas#waveform { display: block; width: 100%; height: 100%; }
-    .wave-progress {
-      position: absolute; top: 0; left: 0; width: 0%; height: 100%;
-      background: rgba(124,92,252,0.07);
-      border-right: 2px solid var(--accent); pointer-events: none;
-    }
-    .player-controls { display: flex; align-items: center; gap: 0.75rem; }
-    .ctrl-btn {
-      width: 44px; height: 44px; border-radius: 50%;
-      border: 1px solid var(--border2); background: var(--surface2);
-      color: var(--text2); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem; transition: all 0.15s;
-      touch-action: manipulation; -webkit-appearance: none; flex-shrink: 0;
-    }
-    .ctrl-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--accent2); }
-    .ctrl-btn.play { background: var(--accent); border: none; color: #fff; box-shadow: 0 0 14px var(--accent-glow); }
-    .ctrl-btn.play:hover { filter: brightness(1.12); }
-    .time-bar { flex: 1; display: flex; flex-direction: column; gap: 0.28rem; }
-    .time-labels {
-      display: flex; justify-content: space-between;
-      font-size: 0.67rem; color: var(--text3); font-variant-numeric: tabular-nums;
-    }
-    input[type=range].seek { height: 3px; touch-action: pan-x; }
-    input[type=range].seek::-webkit-slider-thumb { width: 12px; height: 12px; }
-
-
-    /* ══════════════════════════════════════════════════════════════
-       API PANEL
-    ══════════════════════════════════════════════════════════════ */
-    .api-layout {
-      max-width: 1040px; margin: 0 auto;
-      padding: 1.75rem 1rem 4rem;
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 1.25rem;
-      align-items: start;
-    }
-    @media (max-width: 700px) {
-      .api-layout { grid-template-columns: 1fr; }
-      .api-sidebar { display: none; }
-    }
-
-    /* Sidebar */
-    .api-sidebar {
-      position: sticky; top: 72px;
-      display: flex; flex-direction: column; gap: 0.25rem;
-    }
-    .sidebar-label {
-      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.1em; color: var(--text3);
-      padding: 0.6rem 0.75rem 0.3rem;
-    }
-    .sidebar-link {
-      font-size: 0.8rem; color: var(--text2);
-      padding: 0.4rem 0.75rem;
-      border-radius: var(--radius-xs);
-      cursor: pointer; transition: all 0.13s;
-      display: flex; align-items: center; gap: 0.45rem;
-      text-decoration: none;
-    }
-    .sidebar-link:hover { background: var(--surface2); color: var(--text); }
-    .sidebar-link.active { background: var(--surface3); color: var(--accent2); }
-    .sidebar-link .method-pill {
-      font-size: 0.58rem; font-weight: 700; padding: 0.1rem 0.4rem;
-      border-radius: 3px; letter-spacing: 0.05em;
-    }
-    .pill-get  { background: var(--green-dim);  color: var(--green); border: 1px solid var(--green-border); }
-    .pill-post { background: var(--blue-dim);   color: var(--blue);  border: 1px solid var(--blue-border); }
-
-    /* Main docs content */
-    .api-content { display: flex; flex-direction: column; gap: 1.25rem; }
-
-    /* Hero */
-    .api-hero {
-      background: linear-gradient(135deg, rgba(124,92,252,0.1) 0%, rgba(96,165,250,0.05) 100%);
-      border: 1px solid rgba(124,92,252,0.25);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-    }
-    .api-hero h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em; }
-    .api-hero h2 span { color: var(--accent2); }
-    .api-hero p { font-size: 0.85rem; color: var(--text2); margin-top: 0.4rem; line-height: 1.6; }
-    .base-url-row {
-      display: flex; align-items: center; gap: 0.5rem;
-      margin-top: 1rem;
-      background: var(--surface2); border: 1px solid var(--border2);
-      border-radius: var(--radius-sm); padding: 0.6rem 0.9rem;
-      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.8rem;
-    }
-    .base-url-label { font-size: 0.65rem; font-weight: 700; color: var(--text3); text-transform: uppercase; flex-shrink: 0; }
-    .base-url-val { color: var(--accent3); flex: 1; word-break: break-all; }
-    .copy-icon {
-      cursor: pointer; color: var(--text3); font-size: 0.85rem;
-      padding: 0.2rem; border-radius: 4px; transition: all 0.15s;
-      touch-action: manipulation; flex-shrink: 0;
-    }
-    .copy-icon:hover { color: var(--text); background: var(--surface3); }
-
-    /* Endpoint card */
-    .endpoint-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .endpoint-header {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .method-tag {
-      font-size: 0.7rem; font-weight: 800; padding: 0.22rem 0.6rem;
-      border-radius: 5px; letter-spacing: 0.06em; flex-shrink: 0;
-    }
-    .method-get  { background: var(--green-dim);  color: var(--green);  border: 1px solid var(--green-border); }
-    .method-post { background: var(--blue-dim);   color: var(--blue);   border: 1px solid var(--blue-border);  }
-    .endpoint-path {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.88rem; font-weight: 600; color: var(--text);
-    }
-    .endpoint-desc { font-size: 0.78rem; color: var(--text2); margin-left: auto; text-align: right; }
-    .endpoint-body { padding: 1.1rem 1.25rem; }
-
-    /* Params table */
-    .params-title { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 0.6rem; }
-    .param-row {
-      display: grid; grid-template-columns: 130px 80px 1fr;
-      gap: 0.5rem; padding: 0.5rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.8rem; align-items: start;
-    }
-    .param-row:last-child { border-bottom: none; }
-    .param-name { font-family: 'SF Mono','Fira Code',monospace; color: var(--accent3); font-size: 0.78rem; }
-    .param-type { color: var(--text3); font-size: 0.72rem; }
-    .param-desc { color: var(--text2); line-height: 1.5; }
-    .param-req { color: var(--red); font-size: 0.65rem; font-weight: 700; }
-    .param-opt { color: var(--text3); font-size: 0.65rem; }
-
-    /* Code block */
-    .code-tabs { display: flex; gap: 0; margin-top: 1rem; border-bottom: 1px solid var(--border); }
-    .code-tab {
-      font-size: 0.73rem; font-weight: 600; color: var(--text3);
-      padding: 0.45rem 0.85rem; cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.15s, border-color 0.15s;
-      touch-action: manipulation;
-    }
-    .code-tab:hover { color: var(--text2); }
-    .code-tab.active { color: var(--text); border-bottom-color: var(--accent); }
-    .code-panel { display: none; }
-    .code-panel.active { display: block; }
-    .code-block {
-      position: relative;
-      background: var(--bg); border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-      padding: 1rem 1.1rem;
-      font-family: 'SF Mono','Fira Code','Cascadia Code',monospace;
-      font-size: 0.75rem; line-height: 1.65;
-      color: #c9d1d9; overflow-x: auto;
-      white-space: pre;
-    }
-    .code-copy {
-      position: absolute; top: 0.6rem; right: 0.6rem;
-      background: var(--surface3); border: 1px solid var(--border2);
-      color: var(--text3); font-size: 0.68rem; font-weight: 600;
-      padding: 0.2rem 0.55rem; border-radius: 4px;
-      cursor: pointer; transition: all 0.15s; touch-action: manipulation;
-    }
-    .code-copy:hover { color: var(--text); border-color: var(--accent2); }
-    .code-copy.copied { color: var(--green); border-color: var(--green-border); }
-    /* syntax colors */
-    .kw  { color: #ff7b72; }
-    .str { color: #a5d6ff; }
-    .cmnt{ color: #8b949e; }
-    .fn  { color: #d2a8ff; }
-    .num { color: #79c0ff; }
-    .key { color: #e3b341; }
-
-    /* Response example */
-    .resp-block {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 0.9rem 1rem;
-      font-family: 'SF Mono','Fira Code',monospace; font-size: 0.73rem;
-      line-height: 1.65; color: #c9d1d9; overflow-x: auto; white-space: pre; margin-top: 1rem;
-    }
-
-    /* Playground */
-    .playground-card {
-      background: var(--surface);
-      border: 1px solid rgba(124,92,252,0.3);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .playground-header {
-      display: flex; align-items: center; gap: 0.6rem;
-      padding: 0.9rem 1.25rem;
-      background: rgba(124,92,252,0.06);
-      border-bottom: 1px solid rgba(124,92,252,0.2);
-    }
-    .playground-header h3 { font-size: 0.9rem; font-weight: 700; }
-    .playground-header p  { font-size: 0.75rem; color: var(--text2); }
-    .playground-body { padding: 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; }
-    .pg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    @media (max-width: 520px) { .pg-row { grid-template-columns: 1fr; } }
-    .pg-field label { font-size: 0.73rem; font-weight: 600; color: var(--text2); display: block; margin-bottom: 0.35rem; }
-    .pg-field input, .pg-field select {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius-xs); color: var(--text); font-size: 16px;
-      padding: 0.55rem 0.75rem; outline: none; font-family: inherit;
-      -webkit-appearance: none; transition: border-color 0.2s;
-    }
-    .pg-field input:focus, .pg-field select:focus { border-color: var(--accent); }
-    .pg-field select option { background: var(--surface3); }
-    .pg-result {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-xs); padding: 0.85rem;
-      font-family: 'SF Mono','Fira Code',monospace; font-size: 0.72rem;
-      line-height: 1.6; color: #8b949e; min-height: 80px;
-      white-space: pre-wrap; word-break: break-all;
-      max-height: 260px; overflow-y: auto;
-    }
-    .pg-result.ok  { color: #c9d1d9; }
-    .pg-result.err { color: var(--red); }
-
-    /* Voice table for API docs */
-    .voice-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-    .voice-table th {
-      text-align: left; padding: 0.5rem 0.75rem;
-      font-size: 0.67rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--text3);
-      border-bottom: 1px solid var(--border2);
-    }
-    .voice-table td {
-      padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border);
-      color: var(--text2);
-    }
-    .voice-table tr:last-child td { border-bottom: none; }
-    .voice-table .mono { font-family: 'SF Mono','Fira Code',monospace; font-size: 0.72rem; color: var(--accent3); }
-    .voice-table .gf { color: #f472b6; }
-    .voice-table .gm { color: #60a5fa; }
-
-    /* Divider */
-    .section-divider { height: 1px; background: var(--border); margin: 0.25rem 0; }
-  </style>
+  <link rel="stylesheet" href="/static/css/main.css" />
 </head>
 <body>
 
@@ -538,10 +15,10 @@
     <div class="nav-logo-text">Piper <span>TTS</span></div>
   </div>
   <div class="nav-tabs">
-    <div class="nav-tab active" data-panel="studio" onclick="switchPanel('studio',this)">
+    <div class="nav-tab active" onclick="switchPanel('studio', this)">
       <span class="tab-icon">🎛</span> Studio
     </div>
-    <div class="nav-tab" data-panel="api" onclick="switchPanel('api',this)">
+    <div class="nav-tab" onclick="switchPanel('api', this)">
       <span class="tab-icon">⚡</span> API
     </div>
   </div>
@@ -555,17 +32,16 @@
 <div id="panel-studio" class="panel active">
 <div class="studio-layout">
 
-  <!-- Voice picker -->
   <div class="card">
     <div class="card-title">Choose Voice</div>
     <div class="voice-grid" id="voiceGrid"></div>
   </div>
 
-  <!-- Text -->
   <div class="card">
     <div class="card-title">Text to Speak</div>
     <div class="text-wrap">
-      <textarea id="textInput" placeholder="Type or paste your text here… (Ctrl+Enter to synthesize)"
+      <textarea id="textInput"
+        placeholder="Type or paste your text here… (Ctrl+Enter to synthesize)"
         oninput="updateCharCount()"></textarea>
       <span class="char-count" id="charCount">0 / 5000</span>
     </div>
@@ -578,7 +54,6 @@
     </div>
   </div>
 
-  <!-- Controls -->
   <div class="card">
     <div class="card-title">
       Voice Controls
@@ -588,33 +63,31 @@
       <div class="ctrl">
         <label>🐢 Speed <span class="v" id="rateVal">+0%</span></label>
         <input type="range" id="rate" min="-50" max="100" step="5" value="0"
-          oninput="document.getElementById('rateVal').textContent=fmtPct(+this.value)" />
+          oninput="document.getElementById('rateVal').textContent = fmtPct(+this.value)" />
         <div class="ctrl-hint">−50% slower · +100% faster</div>
       </div>
       <div class="ctrl">
         <label>🎵 Pitch <span class="v" id="pitchVal">+0 Hz</span></label>
         <input type="range" id="pitch" min="-20" max="20" step="1" value="0"
-          oninput="document.getElementById('pitchVal').textContent=fmtHz(+this.value)" />
+          oninput="document.getElementById('pitchVal').textContent = fmtHz(+this.value)" />
         <div class="ctrl-hint">−20 Hz lower · +20 Hz higher</div>
       </div>
       <div class="ctrl">
         <label>🔊 Volume <span class="v" id="volVal">+0%</span></label>
         <input type="range" id="volume" min="-50" max="50" step="5" value="0"
-          oninput="document.getElementById('volVal').textContent=fmtPct(+this.value)" />
+          oninput="document.getElementById('volVal').textContent = fmtPct(+this.value)" />
         <div class="ctrl-hint">−50% quieter · +50% louder</div>
       </div>
     </div>
   </div>
 
-  <!-- Actions -->
   <div class="action-bar">
     <button class="btn btn-primary" id="synthBtn" onclick="synthesize()">🎙 Synthesize Speech</button>
-    <button class="btn btn-ghost" id="regenBtn" style="display:none" onclick="synthesize()">🔄 Regenerate</button>
+    <button class="btn btn-ghost"   id="regenBtn" style="display:none" onclick="synthesize()">🔄 Regenerate</button>
   </div>
 
   <div class="status-bar" id="statusBar"></div>
 
-  <!-- Player -->
   <div class="card player-card" id="playerCard">
     <div class="player-top">
       <div>
@@ -632,7 +105,8 @@
       <button class="ctrl-btn play" id="playBtn" onclick="togglePlay()">▶</button>
       <button class="ctrl-btn" onclick="seek(5)">⏭</button>
       <div class="time-bar">
-        <input type="range" class="seek" id="seekBar" min="0" max="100" value="0" oninput="onSeek(this.value)" />
+        <input type="range" class="seek" id="seekBar" min="0" max="100" value="0"
+          oninput="onSeek(this.value)" />
         <div class="time-labels">
           <span id="timeCurrent">0:00</span>
           <span id="timeDuration">0:00</span>
@@ -649,26 +123,26 @@
 <div id="panel-api" class="panel">
 <div class="api-layout">
 
-  <!-- Sidebar nav -->
+  <!-- Sidebar -->
   <div class="api-sidebar">
     <div class="sidebar-label">Overview</div>
-    <a class="sidebar-link active" href="#overview" onclick="scrollTo('#overview',this)">📖 Introduction</a>
-    <a class="sidebar-link" href="#voices-list" onclick="scrollTo('#voices-list',this)">🎤 Voice List</a>
+    <a class="sidebar-link active" href="#overview"    onclick="apiScrollTo('#overview',this)">📖 Introduction</a>
+    <a class="sidebar-link"        href="#voices-list" onclick="apiScrollTo('#voices-list',this)">🎤 Voice List</a>
     <div class="sidebar-label">Endpoints</div>
-    <a class="sidebar-link" href="#ep-health" onclick="scrollTo('#ep-health',this)">
+    <a class="sidebar-link" href="#ep-health"    onclick="apiScrollTo('#ep-health',this)">
       <span class="method-pill pill-get">GET</span>/health
     </a>
-    <a class="sidebar-link" href="#ep-voices" onclick="scrollTo('#ep-voices',this)">
+    <a class="sidebar-link" href="#ep-voices"    onclick="apiScrollTo('#ep-voices',this)">
       <span class="method-pill pill-get">GET</span>/voices
     </a>
-    <a class="sidebar-link" href="#ep-synthesize" onclick="scrollTo('#ep-synthesize',this)">
+    <a class="sidebar-link" href="#ep-synthesize" onclick="apiScrollTo('#ep-synthesize',this)">
       <span class="method-pill pill-post">POST</span>/synthesize
     </a>
-    <a class="sidebar-link" href="#ep-speak" onclick="scrollTo('#ep-speak',this)">
+    <a class="sidebar-link" href="#ep-speak"     onclick="apiScrollTo('#ep-speak',this)">
       <span class="method-pill pill-post">POST</span>/speak
     </a>
     <div class="sidebar-label">Tools</div>
-    <a class="sidebar-link" href="#playground" onclick="scrollTo('#playground',this)">🧪 Playground</a>
+    <a class="sidebar-link" href="#playground" onclick="apiScrollTo('#playground',this)">🧪 Playground</a>
   </div>
 
   <!-- Content -->
@@ -680,7 +154,7 @@
       <p>A simple REST API to synthesize natural, human-sounding speech from text. Stream raw audio or receive base64-encoded MP3 in JSON — perfect for AI agents, automation pipelines, and any app that needs a voice.</p>
       <div class="base-url-row">
         <span class="base-url-label">Base URL</span>
-        <span class="base-url-val" id="baseUrlDisplay">{{ base_url }}/api/v1</span>
+        <span class="base-url-val">{{ base_url }}/api/v1</span>
         <span class="copy-icon" onclick="copyText('{{ base_url }}/api/v1', this)" title="Copy">📋</span>
       </div>
     </div>
@@ -688,24 +162,19 @@
     <!-- Voice table -->
     <div class="endpoint-card" id="voices-list">
       <div class="endpoint-header">
-        <span class="endpoint-desc" style="margin-left:0;text-align:left;font-size:0.9rem;font-weight:700;color:var(--text)">Available Voices</span>
+        <span style="font-size:0.9rem;font-weight:700;color:var(--text)">Available Voices</span>
       </div>
       <div class="endpoint-body">
         <table class="voice-table">
           <thead>
-            <tr>
-              <th>Voice ID</th>
-              <th>Name</th>
-              <th>Gender</th>
-              <th>Style</th>
-            </tr>
+            <tr><th>Voice ID</th><th>Name</th><th>Gender</th><th>Style</th></tr>
           </thead>
           <tbody>
             {% for v in voices %}
             <tr>
               <td class="mono">{{ v.id }}</td>
               <td>{{ v.name }}</td>
-              <td class="{{ 'gf' if v.gender=='Female' else 'gm' }}">{{ v.gender }}</td>
+              <td class="{{ 'gf' if v.gender == 'Female' else 'gm' }}">{{ v.gender }}</td>
               <td>{{ v.style }}</td>
             </tr>
             {% endfor %}
@@ -735,19 +204,12 @@
           <div class="code-tab" onclick="showCode(this,'hp')">Python</div>
           <div class="code-tab" onclick="showCode(this,'hj')">JavaScript</div>
         </div>
-        <div id="hc" class="code-panel active">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> {{ base_url }}/api/v1/health</div>
-        </div>
-        <div id="hp" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests
+        <div id="hc" class="code-panel active"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> {{ base_url }}/api/v1/health</div></div>
+        <div id="hp" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests
 r = requests.<span class="fn">get</span>(<span class="str">"{{ base_url }}/api/v1/health"</span>)
-<span class="fn">print</span>(r.<span class="fn">json</span>())</div>
-        </div>
-        <div id="hj" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/health"</span>);
-<span class="kw">const</span> data = <span class="kw">await</span> res.<span class="fn">json</span>();
-console.<span class="fn">log</span>(data);</div>
-        </div>
+<span class="fn">print</span>(r.<span class="fn">json</span>())</div></div>
+        <div id="hj" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/health"</span>);
+console.<span class="fn">log</span>(<span class="kw">await</span> res.<span class="fn">json</span>());</div></div>
       </div>
     </div>
 
@@ -765,19 +227,13 @@ console.<span class="fn">log</span>(data);</div>
           <div class="code-tab" onclick="showCode(this,'vp')">Python</div>
           <div class="code-tab" onclick="showCode(this,'vj')">JavaScript</div>
         </div>
-        <div id="vc" class="code-panel active">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> {{ base_url }}/api/v1/voices</div>
-        </div>
-        <div id="vp" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests
+        <div id="vc" class="code-panel active"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> {{ base_url }}/api/v1/voices</div></div>
+        <div id="vp" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests
 voices = requests.<span class="fn">get</span>(<span class="str">"{{ base_url }}/api/v1/voices"</span>).<span class="fn">json</span>()[<span class="str">"voices"</span>]
 <span class="kw">for</span> v <span class="kw">in</span> voices:
-    <span class="fn">print</span>(v[<span class="str">"id"</span>], <span class="str">"-"</span>, v[<span class="str">"name"</span>])</div>
-        </div>
-        <div id="vj" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> { voices } = <span class="kw">await</span> (<span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/voices"</span>)).<span class="fn">json</span>();
-voices.<span class="fn">forEach</span>(v => console.<span class="fn">log</span>(v.id, v.name));</div>
-        </div>
+    <span class="fn">print</span>(v[<span class="str">"id"</span>], <span class="str">"-"</span>, v[<span class="str">"name"</span>])</div></div>
+        <div id="vj" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> { voices } = <span class="kw">await</span> (<span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/voices"</span>)).<span class="fn">json</span>();
+voices.<span class="fn">forEach</span>(v => console.<span class="fn">log</span>(v.id, v.name));</div></div>
       </div>
     </div>
 
@@ -789,90 +245,45 @@ voices.<span class="fn">forEach</span>(v => console.<span class="fn">log</span>(
         <span class="endpoint-desc">Returns raw audio bytes</span>
       </div>
       <div class="endpoint-body">
-        <p style="font-size:0.8rem;color:var(--text2);margin-bottom:0.9rem">Synthesizes speech and streams back the audio file directly (MP3 or WAV). Best for saving audio to disk or piping to a media player.</p>
+        <p style="font-size:0.8rem;color:var(--text2);margin-bottom:0.9rem">Synthesizes speech and streams back the audio file (MP3 or WAV). Best for saving audio to disk or piping to a media player.</p>
         <div class="params-title">Request Body (JSON)</div>
-        <div class="param-row">
-          <span class="param-name">text <span class="param-req">required</span></span>
-          <span class="param-type">string</span>
-          <span class="param-desc">The text to synthesize. Max 5000 characters.</span>
-        </div>
-        <div class="param-row">
-          <span class="param-name">voice <span class="param-opt">optional</span></span>
-          <span class="param-type">string</span>
-          <span class="param-desc">Voice ID (see /voices). Default: <code style="font-family:monospace;color:var(--accent3)">en-US-AvaNeural</code></span>
-        </div>
-        <div class="param-row">
-          <span class="param-name">rate <span class="param-opt">optional</span></span>
-          <span class="param-type">integer</span>
-          <span class="param-desc">Speaking speed adjustment in %. Range −50 to +100. Default: 0</span>
-        </div>
-        <div class="param-row">
-          <span class="param-name">pitch <span class="param-opt">optional</span></span>
-          <span class="param-type">integer</span>
-          <span class="param-desc">Pitch shift in Hz. Range −20 to +20. Default: 0</span>
-        </div>
-        <div class="param-row">
-          <span class="param-name">volume <span class="param-opt">optional</span></span>
-          <span class="param-type">integer</span>
-          <span class="param-desc">Volume adjustment in %. Range −50 to +50. Default: 0</span>
-        </div>
-        <div class="param-row">
-          <span class="param-name">format <span class="param-opt">optional</span></span>
-          <span class="param-type">string</span>
-          <span class="param-desc"><code style="font-family:monospace;color:var(--accent3)">"mp3"</code> or <code style="font-family:monospace;color:var(--accent3)">"wav"</code>. Default: <code style="font-family:monospace;color:var(--accent3)">"mp3"</code></span>
-        </div>
+        <div class="param-row"><span class="param-name">text <span class="param-req">required</span></span><span class="param-type">string</span><span class="param-desc">Text to synthesize. Max 5000 characters.</span></div>
+        <div class="param-row"><span class="param-name">voice <span class="param-opt">optional</span></span><span class="param-type">string</span><span class="param-desc">Voice ID from /voices. Default: <code style="font-family:monospace;color:var(--accent3)">en-US-AvaNeural</code></span></div>
+        <div class="param-row"><span class="param-name">rate <span class="param-opt">optional</span></span><span class="param-type">integer</span><span class="param-desc">Speed % adjustment. Range −50 to +100. Default: 0</span></div>
+        <div class="param-row"><span class="param-name">pitch <span class="param-opt">optional</span></span><span class="param-type">integer</span><span class="param-desc">Pitch shift in Hz. Range −20 to +20. Default: 0</span></div>
+        <div class="param-row"><span class="param-name">volume <span class="param-opt">optional</span></span><span class="param-type">integer</span><span class="param-desc">Volume % adjustment. Range −50 to +50. Default: 0</span></div>
+        <div class="param-row"><span class="param-name">format <span class="param-opt">optional</span></span><span class="param-type">string</span><span class="param-desc"><code style="font-family:monospace;color:var(--accent3)">"mp3"</code> or <code style="font-family:monospace;color:var(--accent3)">"wav"</code>. Default: <code style="font-family:monospace;color:var(--accent3)">"mp3"</code></span></div>
         <div class="code-tabs">
           <div class="code-tab active" onclick="showCode(this,'sc')">cURL</div>
           <div class="code-tab" onclick="showCode(this,'sp')">Python</div>
           <div class="code-tab" onclick="showCode(this,'sj')">JavaScript</div>
           <div class="code-tab" onclick="showCode(this,'sn')">Node.js</div>
         </div>
-        <div id="sc" class="code-panel active">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> -X POST {{ base_url }}/api/v1/synthesize \
+        <div id="sc" class="code-panel active"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> -X POST {{ base_url }}/api/v1/synthesize \
   -H <span class="str">"Content-Type: application/json"</span> \
-  -d <span class="str">'{"text":"Hello world!","voice":"en-US-AvaNeural","rate":0}'</span> \
-  --output speech.mp3</div>
-        </div>
-        <div id="sp" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests
+  -d <span class="str">'{"text":"Hello world!","voice":"en-US-AvaNeural"}'</span> \
+  --output speech.mp3</div></div>
+        <div id="sp" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests
 
-response = requests.<span class="fn">post</span>(
+res = requests.<span class="fn">post</span>(
     <span class="str">"{{ base_url }}/api/v1/synthesize"</span>,
-    json={
-        <span class="str">"text"</span>: <span class="str">"Hello world!"</span>,
-        <span class="str">"voice"</span>: <span class="str">"en-US-AvaNeural"</span>,
-        <span class="str">"rate"</span>: <span class="num">0</span>,
-        <span class="str">"pitch"</span>: <span class="num">0</span>,
-        <span class="str">"volume"</span>: <span class="num">0</span>,
-    }
+    json={<span class="str">"text"</span>: <span class="str">"Hello world!"</span>, <span class="str">"voice"</span>: <span class="str">"en-US-AvaNeural"</span>}
 )
 <span class="kw">with</span> <span class="fn">open</span>(<span class="str">"speech.mp3"</span>, <span class="str">"wb"</span>) <span class="kw">as</span> f:
-    f.<span class="fn">write</span>(response.content)</div>
-        </div>
-        <div id="sj" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/synthesize"</span>, {
+    f.<span class="fn">write</span>(res.content)</div></div>
+        <div id="sj" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/synthesize"</span>, {
   method: <span class="str">"POST"</span>,
   headers: { <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span> },
-  body: <span class="fn">JSON.stringify</span>({
-    text: <span class="str">"Hello world!"</span>,
-    voice: <span class="str">"en-US-AvaNeural"</span>,
-    rate: <span class="num">0</span>, pitch: <span class="num">0</span>, volume: <span class="num">0</span>,
-  }),
+  body: <span class="fn">JSON.stringify</span>({ text: <span class="str">"Hello!"</span>, voice: <span class="str">"en-US-AvaNeural"</span> }),
 });
-<span class="kw">const</span> blob = <span class="kw">await</span> response.<span class="fn">blob</span>();
-<span class="cmnt">// blob is audio/mpeg — play or save it</span></div>
-        </div>
-        <div id="sn" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> fs = <span class="fn">require</span>(<span class="str">"fs"</span>);
-
-<span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/synthesize"</span>, {
+<span class="kw">const</span> blob = <span class="kw">await</span> res.<span class="fn">blob</span>(); <span class="cmnt">// audio/mpeg</span></div></div>
+        <div id="sn" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/synthesize"</span>, {
   method: <span class="str">"POST"</span>,
   headers: { <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span> },
   body: <span class="fn">JSON.stringify</span>({ text: <span class="str">"Hello!"</span>, voice: <span class="str">"en-US-BrianNeural"</span> }),
 });
 <span class="kw">const</span> buf = Buffer.<span class="fn">from</span>(<span class="kw">await</span> res.<span class="fn">arrayBuffer</span>());
-fs.<span class="fn">writeFileSync</span>(<span class="str">"speech.mp3"</span>, buf);</div>
-        </div>
+require(<span class="str">"fs"</span>).<span class="fn">writeFileSync</span>(<span class="str">"speech.mp3"</span>, buf);</div></div>
       </div>
     </div>
 
@@ -884,19 +295,19 @@ fs.<span class="fn">writeFileSync</span>(<span class="str">"speech.mp3"</span>, 
         <span class="endpoint-desc">Returns JSON + base64 audio</span>
       </div>
       <div class="endpoint-body">
-        <p style="font-size:0.8rem;color:var(--text2);margin-bottom:0.9rem">Synthesizes speech and returns a JSON response with the audio encoded as base64. <strong>Ideal for AI agents</strong> — no binary handling needed, includes full metadata, request ID, and generation time.</p>
-        <div class="params-title">Request Body — same as /synthesize</div>
+        <p style="font-size:0.8rem;color:var(--text2);margin-bottom:0.9rem">Returns a JSON response with audio encoded as base64. <strong>Ideal for AI agents</strong> — no binary handling, includes request ID and generation metadata.</p>
+        <div class="params-title">Request Body — same parameters as /synthesize</div>
         <div class="params-title" style="margin-top:0.9rem">Response</div>
         <div class="resp-block"><span class="key">{
   "ok"</span>: <span class="num">true</span>,
   <span class="key">"request_id"</span>: <span class="str">"f3a2b1c0-..."</span>,
   <span class="key">"audio"</span>: {
-    <span class="key">"base64"</span>: <span class="str">"//NExAA..."</span>,     <span class="cmnt">← decode &amp; save as .mp3</span>
+    <span class="key">"base64"</span>: <span class="str">"//NExAA..."</span>,
     <span class="key">"format"</span>: <span class="str">"mp3"</span>,
     <span class="key">"mime_type"</span>: <span class="str">"audio/mpeg"</span>,
     <span class="key">"size_bytes"</span>: <span class="num">28416</span>
   },
-  <span class="key">"voice"</span>: { <span class="key">"id"</span>: <span class="str">"en-US-AvaNeural"</span>, <span class="key">"name"</span>: <span class="str">"Ava"</span>, ... },
+  <span class="key">"voice"</span>: { <span class="key">"id"</span>: <span class="str">"en-US-AvaNeural"</span>, <span class="key">"name"</span>: <span class="str">"Ava"</span>, <span class="key">"gender"</span>: <span class="str">"Female"</span> },
   <span class="key">"settings"</span>: { <span class="key">"rate"</span>: <span class="str">"+0%"</span>, <span class="key">"pitch"</span>: <span class="str">"+0Hz"</span>, <span class="key">"volume"</span>: <span class="str">"+0%"</span> },
   <span class="key">"meta"</span>: { <span class="key">"text_length"</span>: <span class="num">12</span>, <span class="key">"generation_seconds"</span>: <span class="num">0.84</span> }
 }</div>
@@ -905,42 +316,27 @@ fs.<span class="fn">writeFileSync</span>(<span class="str">"speech.mp3"</span>, 
           <div class="code-tab" onclick="showCode(this,'ap')">Python (AI agent)</div>
           <div class="code-tab" onclick="showCode(this,'aj')">JavaScript</div>
         </div>
-        <div id="ac" class="code-panel active">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> -X POST {{ base_url }}/api/v1/speak \
+        <div id="ac" class="code-panel active"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="fn">curl</span> -X POST {{ base_url }}/api/v1/speak \
   -H <span class="str">"Content-Type: application/json"</span> \
-  -d <span class="str">'{"text":"Hello!","voice":"en-US-AvaNeural"}'</span></div>
-        </div>
-        <div id="ap" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests, base64
+  -d <span class="str">'{"text":"Hello!","voice":"en-US-AvaNeural"}'</span></div></div>
+        <div id="ap" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">import</span> requests, base64
 
-<span class="cmnt"># AI agent example: synthesize and save</span>
 result = requests.<span class="fn">post</span>(
     <span class="str">"{{ base_url }}/api/v1/speak"</span>,
-    json={
-        <span class="str">"text"</span>: <span class="str">"Task complete. The report has been generated."</span>,
-        <span class="str">"voice"</span>: <span class="str">"en-US-AndrewNeural"</span>,
-        <span class="str">"rate"</span>: <span class="num">-10</span>,  <span class="cmnt"># slightly slower</span>
-    }
+    json={<span class="str">"text"</span>: <span class="str">"Task complete."</span>, <span class="str">"voice"</span>: <span class="str">"en-US-AndrewNeural"</span>}
 ).<span class="fn">json</span>()
 
-<span class="cmnt"># Decode and save audio</span>
-audio_bytes = base64.<span class="fn">b64decode</span>(result[<span class="str">"audio"</span>][<span class="str">"base64"</span>])
-<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"agent_output.mp3"</span>, <span class="str">"wb"</span>) <span class="kw">as</span> f:
-    f.<span class="fn">write</span>(audio_bytes)
-
-<span class="fn">print</span>(<span class="str">f"Generated in {result['meta']['generation_seconds']}s"</span>)</div>
-        </div>
-        <div id="aj" class="code-panel">
-          <div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> result = <span class="kw">await</span> (<span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/speak"</span>, {
+audio = base64.<span class="fn">b64decode</span>(result[<span class="str">"audio"</span>][<span class="str">"base64"</span>])
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"out.mp3"</span>, <span class="str">"wb"</span>) <span class="kw">as</span> f: f.<span class="fn">write</span>(audio)
+<span class="fn">print</span>(<span class="str">f"Done in {result['meta']['generation_seconds']}s"</span>)</div></div>
+        <div id="aj" class="code-panel"><div class="code-block"><button class="code-copy" onclick="copyCode(this)">Copy</button><span class="kw">const</span> { audio } = <span class="kw">await</span> (<span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"{{ base_url }}/api/v1/speak"</span>, {
   method: <span class="str">"POST"</span>,
   headers: { <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span> },
   body: <span class="fn">JSON.stringify</span>({ text: <span class="str">"Hello!"</span>, voice: <span class="str">"en-US-EmmaNeural"</span> }),
 })).<span class="fn">json</span>();
 
-<span class="cmnt">// Play in browser directly from base64</span>
-<span class="kw">const</span> audio = <span class="kw">new</span> <span class="fn">Audio</span>(<span class="str">`data:audio/mpeg;base64,${result.audio.base64}`</span>);
-audio.<span class="fn">play</span>();</div>
-        </div>
+<span class="cmnt">// Play directly from base64 in the browser</span>
+<span class="kw">new</span> <span class="fn">Audio</span>(<span class="str">`data:${audio.mime_type};base64,${audio.base64}`</span>).<span class="fn">play</span>();</div></div>
       </div>
     </div>
 
@@ -954,11 +350,9 @@ audio.<span class="fn">play</span>();</div>
         </div>
       </div>
       <div class="playground-body">
-        <div>
-          <div class="pg-field">
-            <label>Text</label>
-            <input id="pgText" type="text" value="Hello! This is the Piper TTS API." placeholder="Enter text to synthesize…" />
-          </div>
+        <div class="pg-field">
+          <label>Text</label>
+          <input id="pgText" type="text" value="Hello! This is the Piper TTS API." />
         </div>
         <div class="pg-row">
           <div class="pg-field">
@@ -981,12 +375,12 @@ audio.<span class="fn">play</span>();</div>
           <div class="pg-field">
             <label>Rate (%): <span id="pgRateVal">0</span></label>
             <input type="range" min="-50" max="100" step="5" value="0" id="pgRate"
-              oninput="document.getElementById('pgRateVal').textContent=this.value" />
+              oninput="document.getElementById('pgRateVal').textContent = this.value" />
           </div>
           <div class="pg-field">
             <label>Pitch (Hz): <span id="pgPitchVal">0</span></label>
             <input type="range" min="-20" max="20" step="1" value="0" id="pgPitch"
-              oninput="document.getElementById('pgPitchVal').textContent=this.value" />
+              oninput="document.getElementById('pgPitchVal').textContent = this.value" />
           </div>
         </div>
         <div class="action-bar">
@@ -1008,275 +402,18 @@ audio.<span class="fn">play</span>();</div>
 
 <audio id="audioEl" style="display:none"></audio>
 
+<!-- Inject server-side data for JS -->
 <script>
-  const VOICES = {{ voices|tojson }};
-  const BASE_URL = {{ base_url|tojson }};
-  let selectedVoice = VOICES[0].id;
-  let currentBlob = null, currentUrl = null, animFrame = null;
-  const audioEl = document.getElementById('audioEl');
-
-  /* ── Panel switching ── */
-  function switchPanel(name, tab) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('panel-' + name).classList.add('active');
-    tab.classList.add('active');
-  }
-
-  /* ── Sidebar scroll ── */
-  function scrollTo(selector, el) {
-    event.preventDefault();
-    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-    el.classList.add('active');
-    const target = document.querySelector(selector);
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  /* ── Voice grid ── */
-  function buildVoiceGrid() {
-    const grid = document.getElementById('voiceGrid');
-    grid.innerHTML = '';
-    VOICES.forEach(v => {
-      const c = document.createElement('div');
-      c.className = 'voice-card' + (v.id === selectedVoice ? ' selected' : '');
-      c.dataset.id = v.id;
-      c.innerHTML = `<div class="voice-name">${v.name}</div>
-        <div class="voice-meta">
-          <span class="gdot ${v.gender==='Female'?'f':'m'}"></span>
-          ${v.gender} · ${v.style}
-        </div>`;
-      c.addEventListener('click', () => {
-        selectedVoice = v.id;
-        document.querySelectorAll('.voice-card').forEach(x => x.classList.remove('selected'));
-        c.classList.add('selected');
-      });
-      grid.appendChild(c);
-    });
-  }
-
-  /* ── Helpers ── */
-  const fmtPct = v => (v>=0?'+':'')+v+'%';
-  const fmtHz  = v => (v>=0?'+':'')+v+' Hz';
-  const fmtT   = s => {
-    if (!isFinite(s)) return '0:00';
-    return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+  window.APP_CONFIG = {
+    voices:  {{ voices|tojson }},
+    baseUrl: {{ base_url|tojson }},
   };
-
-  function updateCharCount() {
-    const n = document.getElementById('textInput').value.length;
-    document.getElementById('charCount').textContent = n + ' / 5000';
-  }
-  function setPhrase(t) {
-    document.getElementById('textInput').value = t;
-    updateCharCount();
-  }
-  function resetControls() {
-    [['rate','rateVal',fmtPct,0],['pitch','pitchVal',fmtHz,0],['volume','volVal',fmtPct,0]]
-      .forEach(([id,lid,fmt,def]) => {
-        document.getElementById(id).value = def;
-        document.getElementById(lid).textContent = fmt(def);
-      });
-  }
-
-  /* ── Synthesize ── */
-  async function synthesize() {
-    const text = document.getElementById('textInput').value.trim();
-    if (!text) { setStatus('Please enter some text.', 'error'); return; }
-    const sb = document.getElementById('synthBtn'), rb = document.getElementById('regenBtn');
-    sb.disabled = rb.disabled = true;
-    setStatus('<span class="spinner"></span>Generating speech…', 'loading');
-    document.getElementById('playerCard').classList.remove('show');
-
-    try {
-      const t0 = Date.now();
-      const res = await fetch('/api/v1/synthesize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          voice: selectedVoice,
-          rate:   +document.getElementById('rate').value,
-          pitch:  +document.getElementById('pitch').value,
-          volume: +document.getElementById('volume').value,
-        }),
-      });
-      if (!res.ok) { const e = await res.json().catch(()=>({error:res.statusText})); throw new Error(e.error||res.statusText); }
-      const blob = await res.blob();
-      const elapsed = ((Date.now()-t0)/1000).toFixed(1);
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
-      currentBlob = blob; currentUrl = URL.createObjectURL(blob);
-      audioEl.src = currentUrl;
-      await new Promise(r => { audioEl.onloadedmetadata = r; audioEl.load(); });
-      setupPlayer(elapsed);
-      audioEl.play();
-      setStatus('Ready in ' + elapsed + 's', 'ok');
-      rb.style.display = '';
-    } catch(e) {
-      setStatus('Error: ' + e.message, 'error');
-    } finally {
-      sb.disabled = rb.disabled = false;
-    }
-  }
-
-  function setupPlayer(elapsed) {
-    document.getElementById('playerCard').classList.add('show');
-    const dur = audioEl.duration;
-    document.getElementById('timeDuration').textContent = fmtT(dur);
-    document.getElementById('seekBar').max = isFinite(dur) ? dur : 100;
-    const v = VOICES.find(x=>x.id===selectedVoice);
-    document.getElementById('playerMeta').textContent =
-      `${v?v.name+' · ':''}${fmtT(dur)} · Generated in ${elapsed}s`;
-    drawWaveform(); startProgress();
-  }
-
-  async function drawWaveform() {
-    const canvas = document.getElementById('waveform');
-    const ctx = canvas.getContext('2d');
-    canvas.width  = canvas.offsetWidth  * devicePixelRatio;
-    canvas.height = canvas.offsetHeight * devicePixelRatio;
-    try {
-      const ab = await currentBlob.arrayBuffer();
-      const ac = new (window.AudioContext||window.webkitAudioContext)();
-      const decoded = await ac.decodeAudioData(ab);
-      const data = decoded.getChannelData(0);
-      const w = canvas.width, h = canvas.height;
-      const step = Math.ceil(data.length / w), mid = h/2;
-      ctx.clearRect(0,0,w,h);
-      ctx.strokeStyle = 'rgba(124,92,252,0.6)'; ctx.lineWidth = 1; ctx.beginPath();
-      for (let i=0;i<w;i++) {
-        let mn=1,mx=-1;
-        for (let j=0;j<step;j++) { const v=data[i*step+j]||0; if(v<mn)mn=v; if(v>mx)mx=v; }
-        ctx.moveTo(i,mid+mn*mid*0.88); ctx.lineTo(i,mid+mx*mid*0.88);
-      }
-      ctx.stroke(); ac.close();
-    } catch(_) {}
-  }
-
-  function startProgress() {
-    cancelAnimationFrame(animFrame);
-    function tick() {
-      if (audioEl.paused || audioEl.ended) {
-        if (audioEl.ended) {
-          document.getElementById('playBtn').textContent = '▶';
-          document.getElementById('waveOverlay').style.width = '0%';
-          document.getElementById('seekBar').value = 0;
-          document.getElementById('timeCurrent').textContent = '0:00';
-        }
-        return;
-      }
-      const pct = (audioEl.currentTime / audioEl.duration) * 100;
-      document.getElementById('waveOverlay').style.width = pct + '%';
-      document.getElementById('seekBar').value = audioEl.currentTime;
-      document.getElementById('timeCurrent').textContent = fmtT(audioEl.currentTime);
-      animFrame = requestAnimationFrame(tick);
-    }
-    animFrame = requestAnimationFrame(tick);
-  }
-
-  function togglePlay() {
-    if (!currentUrl) return;
-    if (audioEl.paused) { audioEl.play(); document.getElementById('playBtn').textContent='⏸'; startProgress(); }
-    else { audioEl.pause(); document.getElementById('playBtn').textContent='▶'; }
-  }
-  audioEl.addEventListener('play',  () => { document.getElementById('playBtn').textContent='⏸'; startProgress(); });
-  audioEl.addEventListener('pause', () => { document.getElementById('playBtn').textContent='▶'; });
-  function seek(d) { if (currentUrl) audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, audioEl.currentTime+d)); }
-  function onSeek(v) { if (currentUrl) audioEl.currentTime = +v; }
-  function downloadAudio() {
-    if (!currentBlob) return;
-    const a = document.createElement('a'); a.href=currentUrl; a.download='speech.mp3'; a.click();
-  }
-  function setStatus(msg, type='') {
-    const el = document.getElementById('statusBar');
-    el.innerHTML = msg; el.className = 'status-bar ' + type;
-  }
-  document.getElementById('textInput').addEventListener('keydown', e => {
-    if (e.key==='Enter' && e.ctrlKey) { e.preventDefault(); synthesize(); }
-  });
-
-  /* ── Code tabs ── */
-  function showCode(tab, panelId) {
-    const group = tab.closest('.endpoint-body');
-    group.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
-    group.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(panelId).classList.add('active');
-  }
-
-  /* ── Copy utils ── */
-  function copyCode(btn) {
-    const text = btn.closest('.code-block').innerText.replace(/^Copy\n?/,'');
-    navigator.clipboard.writeText(text).then(() => {
-      btn.textContent = 'Copied!'; btn.classList.add('copied');
-      setTimeout(() => { btn.textContent='Copy'; btn.classList.remove('copied'); }, 2000);
-    });
-  }
-  function copyText(text, el) {
-    navigator.clipboard.writeText(text).then(() => {
-      const orig = el.textContent; el.textContent = '✓';
-      setTimeout(() => { el.textContent = orig; }, 1800);
-    });
-  }
-
-  /* ── Playground ── */
-  async function runPlayground() {
-    const text = document.getElementById('pgText').value.trim();
-    if (!text) return;
-    const btn = document.getElementById('pgBtn');
-    btn.disabled = true; btn.textContent = '⏳ Running…';
-    const result = document.getElementById('pgResult');
-    result.className = 'pg-result'; result.textContent = 'Calling API…';
-    document.getElementById('pgAudioWrap').style.display = 'none';
-
-    const endpoint = document.getElementById('pgEndpoint').value;
-    const payload = {
-      text,
-      voice: document.getElementById('pgVoice').value,
-      rate:  +document.getElementById('pgRate').value,
-      pitch: +document.getElementById('pgPitch').value,
-    };
-
-    try {
-      const t0 = Date.now();
-      const res = await fetch('/api/v1/' + endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const elapsed = ((Date.now()-t0)/1000).toFixed(2);
-
-      if (endpoint === 'speak') {
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || res.statusText);
-        const display = { ...json };
-        display.audio = { ...json.audio, base64: json.audio.base64.slice(0,40) + '… [truncated]' };
-        result.className = 'pg-result ok';
-        result.textContent = `HTTP ${res.status} · ${elapsed}s\n\n` + JSON.stringify(display, null, 2);
-        // play from base64
-        const audio = document.getElementById('pgAudio');
-        audio.src = `data:${json.audio.mime_type};base64,${json.audio.base64}`;
-        document.getElementById('pgAudioWrap').style.display = '';
-        audio.play().catch(()=>{});
-      } else {
-        if (!res.ok) { const e = await res.json().catch(()=>({error:res.statusText})); throw new Error(e.error||res.statusText); }
-        const blob = await res.blob();
-        result.className = 'pg-result ok';
-        result.textContent = `HTTP 200 · ${elapsed}s · ${blob.size.toLocaleString()} bytes\nContent-Type: ${res.headers.get('Content-Type')}\n\nAudio ready ↓`;
-        const url = URL.createObjectURL(blob);
-        const audio = document.getElementById('pgAudio');
-        audio.src = url; document.getElementById('pgAudioWrap').style.display = '';
-        audio.play().catch(()=>{});
-      }
-    } catch(e) {
-      result.className = 'pg-result err';
-      result.textContent = 'Error: ' + e.message;
-    } finally {
-      btn.disabled = false; btn.textContent = '▶ Run Request';
-    }
-  }
-
-  buildVoiceGrid();
-  updateCharCount();
 </script>
+
+<!-- External JS — load in dependency order -->
+<script src="/static/js/app.js"></script>
+<script src="/static/js/studio.js"></script>
+<script src="/static/js/api-docs.js"></script>
+
 </body>
 </html>
